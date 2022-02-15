@@ -7,9 +7,9 @@ import music
 import nacl
 import random
 import praw
-import flask
+
 from discord.ext import commands
-from keep_alive import keep_alive
+
 from memes import Memes
 from music import music
 TOKEN = os.environ['TOKEN']
@@ -179,16 +179,6 @@ async def on_ready():
       await asyncio.sleep(40)
       
       
-global GuildNum
-GuildNum = client.guilds
-from flask import Flask
-app = Flask('/')
-from threading import Thread
-from flask import render_template
-@app.route('/')
-def home():
-  return render_template("file.html", myvar=GuildNum)
-    
 
 
 
@@ -204,10 +194,6 @@ x = 3
 
 
 
-@client.event
-async def on_command_error(ctx, error):
-  channel = client.get_channel(845040645118623765)
-  await channel.send(f'error in {ctx.guild.name} by {ctx.author.name}:{error}')
 
 
 
@@ -296,9 +282,8 @@ async def spam(ctx):
 
 @client.command(name='botcredits')
 async def credits(ctx):
-    await ctx.send('this bot was made by virt360#3086')
+    await ctx.send('this bot was made by Virtual#5970')
 
 
 
-keep_alive()
 client.run(TOKEN)
