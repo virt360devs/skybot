@@ -7,13 +7,16 @@ import music
 import nacl
 import random
 import praw
-
+import flask
 from discord.ext import commands
-
+from keep_alive import keep_alive
 from memes import Memes
 from music import music
 TOKEN = os.environ['TOKEN']
-
+global BotName
+global BotColor
+BotName = "CHANGE_THIS"
+BotColor = CHANGE THIS
 
 intents = discord.Intents.default()
 
@@ -33,8 +36,8 @@ client.add_cog(music(client))
 async def announce(ctx, *, content):
   myEmbed = discord.Embed(title="Announcement",
                             description=content,
-                            color=0xffe603)
-  myEmbed.set_footer(text="Sent by SKYbot")
+                            color=BotColor)
+  myEmbed.set_footer(text=f"Sent by {BotName}")
 
   await ctx.send(embed=myEmbed)
   pingmessage = await ctx.send("@everyone")
@@ -48,16 +51,32 @@ async def customemblink(ctx,*, content):
   global emblink
   emblink=content
   await ctx.send(f"Embed Title Is Now {content}")
-
 @client.command(name="customembed")
 @commands.has_permissions(manage_guild=True)
 async def customemb(ctx, *, content):
   myEmbed = discord.Embed(title=emblink,
                             description=content,
-                            color=0xffe603)
-  myEmbed.set_footer(text="Sent by SKYbot")
+                            color=BotColor)
+  myEmbed.set_footer(text=f"Sent by {BotName} ")
   await ctx.send(embed=myEmbed)
+  await ctx.message.delete
+@client.command(name="embedlink")
+@commands.has_permissions(manage_guild=True)
+async def customemblink(ctx,*, content):
+  global embimg
+  embimg=content
+  await ctx.send(f"Embed Image Link Is Now {content}")
 
+
+@client.command(name="imageembed")
+@commands.has_permissions(manage_guild=True)
+async def imageemb(ctx, *, content):
+  myEmbed = discord.Embed(title=emblink,
+                            description=content,
+                            color=BotColor)
+  myEmbed.set_footer(text=f"Sent by {BotName} ")
+  myEmbed.set_image(url=embimg)
+  await ctx.send(embed=myEmbed)
 @client.command(name='8ball')
 async def ball(ctx):
   response = ["maybe", "I have no idea", "definitely not", "Hell yeah", "Im Busy leave me alone", "no.", "yes.", "optomisticly, yes. truthfully, no", "Absolutely!"]
@@ -79,8 +98,8 @@ async def report(ctx, Member: discord.Member, *, content: str):
       channel_id = channel.id
       myEmbed = discord.Embed(title="New report",
           description=f"Reporting {Member.mention} for {content}",
-          color=0xffe603)
-      myEmbed.set_footer(text="Sent by SKYbot")
+          color=BotColor)
+      myEmbed.set_footer(text=f"Sent by {BotName} ")
       await channel.send(embed=myEmbed)
 
 @client.command(name='dm')
@@ -115,8 +134,8 @@ async def ban(ctx, member: discord.Member, *, reason='die_loser'):
 async def echo(ctx, *, content: str):
     myEmbed = discord.Embed(title="echoing",
                             description=content,
-                            color=0xffe603)
-    myEmbed.set_footer(text="Sent by SKYbot")
+                            color=BotColor)
+    myEmbed.set_footer(text=f"Sent by{BotName} ")
 
     await ctx.send(embed=myEmbed)
     await ctx.message.delete()
@@ -136,9 +155,9 @@ async def flight(ctx, *, content: str):
      myEmbed = discord.Embed(
          title="Flight Announcement!",
          description=link,
-         color=0xffe603)
+         color=BotColor)
      myEmbed.add_field(name="Flight Info:", value=content)
-     myEmbed.set_footer(text="Sent by SKYbot")
+     myEmbed.set_footer(text=f"Sent by {BotName} ")
      myEmbed.add_field(name='React with ✔️ to get your ticket', value=f'in {ctx.guild.name}')
      message = await ctx.send(embed=myEmbed)
      await message.add_reaction('✔️')
@@ -175,10 +194,20 @@ async def on_ready():
       await asyncio.sleep(40)
       await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"over {len(client.guilds)} servers!"))
       await asyncio.sleep(40)
-      await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="SKYBOT V2! Music And Embeds! "))
+      await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="I Use She/Her Pronouns"))
       await asyncio.sleep(40)
       
       
+global GuildNum
+GuildNum = client.guilds
+from flask import Flask
+app = Flask('/')
+from threading import Thread
+from flask import render_template
+@app.route('/')
+def home():
+  return render_template("file.html", myvar=GuildNum)
+    
 
 
 
@@ -194,6 +223,10 @@ x = 3
 
 
 
+@client.event
+async def on_command_error(ctx, error):
+  channel = client.get_channel(845040645118623765)
+  await channel.send(f'error in {ctx.guild.name} by {ctx.author.name}:{error}')
 
 
 
@@ -213,7 +246,7 @@ async def whois(ctx, member: discord.Member):
     roles = len(member.roles)
 
     Bembed = discord.Embed(
-        title=name + "'s Information", color=0xffe603
+        title=name + "'s Information", color=BotColor
     )
     Bembed.set_thumbnail(url=avatar)
     Bembed.add_field(name="User and Tag", value = name+"#"+tag, inline=True)
@@ -226,47 +259,26 @@ async def whois(ctx, member: discord.Member):
 
 
 
-@client.command(name='therapy')
-async def therapy(ctx):
-    await ctx.send('so tell me how it all began')
-    for x in range(0, 3):
-        await asyncio.sleep(8)
-        await ctx.send('and how did that make you feel')
-    await asyncio.sleep(8)
-    await ctx.send('now give me 10k in dank memer currency')
 
 
 @client.command(name='ping')
 async def ping(ctx):
-    myEmbed = discord.Embed(title="you say ping",
-                            description="i say pong!",
-                            color=0xffe603)
-    myEmbed.set_footer(text="Sent by SKYbot")
-
-    await ctx.send(embed=myEmbed)
-
+  ping = round(client.latency)
+  await ctx.send(f'🏓 Your ping is **{ping}!**')
 
 @client.command(name='invite')
 async def invite(ctx):
     myEmbed = discord.Embed(
-        title="hey do you like the bot?",
+        title="If you like the bot, invite it here",
         description=
         "invite it here:https://discord.com/api/oauth2/authorize?client_id=798203593227501598&permissions=8&scope=bot",
-        color=0xffe603)
-    myEmbed.set_footer(text="Sent by SKYbot")
+        color=BotColor)
+    myEmbed.set_footer(text=f"Sent by {BotName} ")
 
     await ctx.send(embed=myEmbed)
 
 
-@client.command(name='hi')
-async def hello(ctx):
-    myEmbed = discord.Embed(title="hi!",
-                            description="do you need friends too",
-                            color=0xffe603)
-    myEmbed.add_field(name="if you need mental help do ", value="-therapy")
-    myEmbed.set_footer(text="Sent by SKYbot")
 
-    await ctx.send(embed=myEmbed)
 
 
 
@@ -282,8 +294,8 @@ async def spam(ctx):
 
 @client.command(name='botcredits')
 async def credits(ctx):
-    await ctx.send('this bot was made by Virtual#5970')
+    await ctx.send('This bot was made by Virtual#3600 with help from Skilvre, Open sourced at https://virt360.dev')
 
 
-
+keep_alive()
 client.run(TOKEN)
